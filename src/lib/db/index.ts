@@ -1,6 +1,5 @@
 import "server-only";
 import { drizzle as drizzlePostgres } from "drizzle-orm/postgres-js";
-import { drizzle as drizzlePglite } from "drizzle-orm/pglite";
 import type { PgDatabase, PgQueryResultHKT } from "drizzle-orm/pg-core";
 import postgres from "postgres";
 import { assertDeploymentConfig, ConfigurationError, env, isProduction, isVercel } from "@/lib/env";
@@ -37,6 +36,8 @@ function createDb(): Database {
     throw new ConfigurationError("DATABASE_URL is required in production.");
   }
   // Embedded Postgres (WASM) for local development & automated testing only.
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { drizzle: drizzlePglite } = require("drizzle-orm/pglite") as typeof import("drizzle-orm/pglite");
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { PGlite } = require("@electric-sql/pglite") as typeof import("@electric-sql/pglite");
   if (!env.PGLITE_DIR.startsWith("memory://")) {
