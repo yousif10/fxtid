@@ -1,0 +1,54 @@
+# Self-hosting stack (Docker / Coolify / Dokploy).
+#   1. cp .env.example .env   and fill in APP_URL + POSTGRES_PASSWORD (+ DATABASE_URL below uses it)
+#   2. docker compose up -d db
+#   3. docker compose run --rm migrate          # apply migrations + reference data
+#   4. docker compose run --rm migrate pnpm admin:create --email you@company.co.uk --name "Your Name"
+#   5. docker compose up -d app
+# Put a TLS-terminating reverse proxy (Traefik/Caddy/Nginx - Coolify & Dokploy provide one) in front of `app`.
+
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: fxt_id
+      POSTGRES_USER: fxt_id
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fxt_id -d fxt_id"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  migrate:
+    build: { context: ., target: migrator }
+    profiles: ["tools"]
+    depends_on: { db: { condition: service_healthy } }
+    environment:
+      DATABASE_URL: postgres://fxt_id:${POSTGRES_PASSWORD}@db:5432/fxt_id
+      DATABASE_SSL: disable
+      APP_URL: ${APP_URL:?set APP_URL in .env}
+    stdin_open: true
+    tty: true
+
+  app:
+    build: { context: ., target: runner }
+    restart: unless-stopped
+    depends_on: { db: { condition: service_healthy } }
+    environment:
+      DATABASE_URL: postgres://fxt_id:${POSTGRES_PASSWORD}@db:5432/fxt_id
+      DATABASE_SSL: disable
+      APP_URL: ${APP_URL}
+      TRUST_PROXY: "true"
+      SESSION_TTL_HOURS: ${SESSION_TTL_HOURS:-12}
+      STORAGE_DIR: /data/storage
+    volumes:
+      - photos:/data/storage
+    ports:
+      - "3000:3000"
+
+volumes:
+  pgdata:
+  photos:

@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: Lint, typecheck, test, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # Isolated test data only: tests use an in-memory Postgres (PGlite) and a
+    # throwaway local storage directory. No database, Supabase or Vercel secrets
+    # are available to this workflow, and tests/setup.ts aborts if any are set.
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+      DATABASE_URL: ""
+      DATABASE_MIGRATION_URL: ""
+      SUPABASE_URL: ""
+      SUPABASE_SECRET_KEY: ""
+      FXT_DATA_ENVIRONMENT: ""
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4 # version read from package.json "packageManager"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install (frozen lockfile)
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Test
+        run: pnpm test
+
+      - name: Production build
+        run: pnpm build

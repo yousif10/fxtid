@@ -1,0 +1,6 @@
+# Normalise line endings in the repository (Linux CI / Vercel); binaries untouched.
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.ttf binary
+*.ico binary

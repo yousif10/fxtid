@@ -1,26 +1,131 @@
 @import "tailwindcss";
 
+/* Inter is bundled locally (also used by the card renderer so on-screen,
+   PNG and PDF typography are identical). */
+@font-face { font-family: "Inter"; font-weight: 400; font-style: normal; font-display: swap; src: url("/fonts/Inter_400Regular.ttf") format("truetype"); }
+@font-face { font-family: "Inter"; font-weight: 500; font-style: normal; font-display: swap; src: url("/fonts/Inter_500Medium.ttf") format("truetype"); }
+@font-face { font-family: "Inter"; font-weight: 600; font-style: normal; font-display: swap; src: url("/fonts/Inter_600SemiBold.ttf") format("truetype"); }
+@font-face { font-family: "Inter"; font-weight: 700; font-style: normal; font-display: swap; src: url("/fonts/Inter_700Bold.ttf") format("truetype"); }
+@font-face { font-family: "Inter"; font-weight: 800; font-style: normal; font-display: swap; src: url("/fonts/Inter_800ExtraBold.ttf") format("truetype"); }
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* FXT brand: navy #02214F and red #D11E25 (from the official logo). */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --brand-navy: #02214f;
+  --brand-navy-2: #0b3a7e;
+  --brand-red: #d11e25;
+
+  --background: #f4f6fa;
+  --foreground: #0f1b2d;
+  --card: #ffffff;
+  --card-foreground: #0f1b2d;
+  --muted: #eef1f6;
+  --muted-foreground: #5b6778;
+  --border: #dde3ec;
+  --input: #cfd7e3;
+  --primary: #02214f;
+  --primary-hover: #0b3a7e;
+  --primary-foreground: #ffffff;
+  --accent: #d11e25;
+  --accent-foreground: #ffffff;
+  --ring: #2f5fb3;
+  --success: #0f7a4a;
+  --success-soft: #e3f4ec;
+  --warning: #9a5b00;
+  --warning-soft: #fff1d6;
+  --danger: #b3131a;
+  --danger-soft: #fde7e8;
+  --info-soft: #e5edfa;
+  --sidebar: #02214f;
+  --sidebar-foreground: #c9d4e6;
+  --sidebar-active: #0e3470;
+  --shadow-color: 215 40% 20%;
+}
+
+.dark {
+  --background: #0a1020;
+  --foreground: #e7ecf4;
+  --card: #111a2c;
+  --card-foreground: #e7ecf4;
+  --muted: #18233a;
+  --muted-foreground: #97a3b8;
+  --border: #223050;
+  --input: #2c3b5e;
+  --primary: #3a6fd0;
+  --primary-hover: #4d80df;
+  --primary-foreground: #ffffff;
+  --accent: #ef3b42;
+  --ring: #6b98ea;
+  --success: #46c98b;
+  --success-soft: #0f2d22;
+  --warning: #f0b453;
+  --warning-soft: #33260f;
+  --danger: #ff6b70;
+  --danger-soft: #3a1418;
+  --info-soft: #172746;
+  --sidebar: #060c1a;
+  --sidebar-foreground: #aab6cc;
+  --sidebar-active: #13213d;
+  --shadow-color: 220 60% 2%;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-ring: var(--ring);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-info-soft: var(--info-soft);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-active: var(--sidebar-active);
+  --color-brand-navy: var(--brand-navy);
+  --color-brand-red: var(--brand-red);
+  --font-sans: "Inter", "Segoe UI", system-ui, sans-serif;
+  --shadow-card: 0 1px 2px hsl(var(--shadow-color) / 0.06), 0 4px 16px -4px hsl(var(--shadow-color) / 0.08);
+  --shadow-pop: 0 10px 40px -8px hsl(var(--shadow-color) / 0.28);
+  --animate-fade-in: fade-in 0.25s ease-out both;
+  --animate-rise: rise 0.35s cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+html { color-scheme: light; }
+html.dark { color-scheme: dark; }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  font-feature-settings: "cv11", "ss01";
+  -webkit-font-smoothing: antialiased;
 }
+
+:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
+/* Card artwork is always rendered with fixed brand colours, never themed. */
+.card-artwork { color-scheme: light; background: #ffffff; }
+.card-artwork svg { display: block; width: 100%; height: auto; }
+
+dialog::backdrop { background: rgb(4 10 24 / 0.55); backdrop-filter: blur(2px); }
