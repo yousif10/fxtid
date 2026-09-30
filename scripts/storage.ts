@@ -21,7 +21,11 @@ function config() {
     console.error("SUPABASE_URL and SUPABASE_SECRET_KEY must be set (server-side values; never NEXT_PUBLIC_).");
     process.exit(1);
   }
-  return { url, key, bucket, headers: { apikey: key, Authorization: `Bearer ${key}` } };
+  const headers: Record<string, string> = { apikey: key };
+if (!key.startsWith("sb_secret_")) {
+  headers.Authorization = `Bearer ${key}`;
+}
+return { url, key, bucket, headers };
 }
 
 async function setup() {
@@ -43,7 +47,7 @@ async function setup() {
     body: JSON.stringify({ id: c.bucket, name: c.bucket, public: false, file_size_limit: MAX_BYTES, allowed_mime_types: ["image/jpeg", "image/webp"] }),
   });
   if (!res.ok) {
-    console.error(`Could not create bucket (HTTP ${res.status}).`);
+    console.error(`Could not create bucket (HTTP ${res.status}): ${await res.text()}`);
     process.exit(1);
   }
   console.log(`Created private bucket "${c.bucket}" (jpeg/webp only, max ${MAX_BYTES / 1024 / 1024} MB).`);
